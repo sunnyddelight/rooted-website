@@ -362,7 +362,7 @@ select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csv
       <div class="pdh-cn" style="color:var(--amber-deep)">祛湿茶</div>
     </div>
     <div class="pd-hero-info">
-      <a class="pd-back" onclick="showPage('home');setTimeout(()=>scrollToEl('products'),100)">Back to all products</a>
+      <a class="pd-back" onclick="if(history.state&&history.length>1){history.back()}else{showPage('home');setTimeout(()=>scrollToEl('products'),100)}">Back to all products</a>
       <div class="pd-name">Dampness Adieu</div>
       <div class="pd-name-cn">祛湿茶</div>
       <div class="pd-price">$40.00</div>
@@ -416,7 +416,7 @@ select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csv
       <div class="pdh-cn" style="color:var(--linen)">美颜茶</div>
     </div>
     <div class="pd-hero-info">
-      <a class="pd-back" onclick="showPage('home');setTimeout(()=>scrollToEl('products'),100)">Back to all products</a>
+      <a class="pd-back" onclick="if(history.state&&history.length>1){history.back()}else{showPage('home');setTimeout(()=>scrollToEl('products'),100)}">Back to all products</a>
       <div class="pd-name">Beauty Brew</div>
       <div class="pd-name-cn">美颜茶</div>
       <div class="pd-price">$40.00</div>
@@ -466,7 +466,7 @@ select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csv
       <div class="pdh-cn" style="color:var(--amber-glow)">晨韵粥</div>
     </div>
     <div class="pd-hero-info">
-      <a class="pd-back" onclick="showPage('home');setTimeout(()=>scrollToEl('products'),100)">Back to all products</a>
+      <a class="pd-back" onclick="if(history.state&&history.length>1){history.back()}else{showPage('home');setTimeout(()=>scrollToEl('products'),100)}">Back to all products</a>
       <div class="pd-name">Morning Mantra Oatmeal</div>
       <div class="pd-name-cn">晨韵粥</div>
       <div class="pd-price">$35.00</div>
@@ -540,12 +540,19 @@ select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csv
 
 <script>
 // ── PAGE ROUTING ──
-function showPage(id){
+let currentPage='home';
+function showPage(id,pushHistory=true){
+  const wasOnPage=(currentPage===id);
   document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
   const t=document.getElementById('page-'+id);
-  if(t){t.classList.remove('hidden');document.documentElement.style.scrollBehavior='auto';window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;setTimeout(()=>{document.documentElement.style.scrollBehavior=''},50);trackEv('page_view',{page:id});initReveal()}
+  if(t){t.classList.remove('hidden');if(!wasOnPage){document.documentElement.style.scrollBehavior='auto';window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;setTimeout(()=>{document.documentElement.style.scrollBehavior=''},50)}currentPage=id;if(pushHistory){history.pushState({page:id},'','#'+id)}trackEv('page_view',{page:id});initReveal()}
 }
-function scrollToEl(id){setTimeout(()=>{const e=document.getElementById(id);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},50)}
+function scrollToEl(id){setTimeout(()=>{const e=document.getElementById(id);if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},100)}
+window.addEventListener('popstate',function(e){
+  if(e.state&&e.state.page){showPage(e.state.page,false);if(e.state.page==='home'){setTimeout(()=>scrollToEl('products'),150)}}
+  else{showPage('home',false);setTimeout(()=>scrollToEl('products'),150)}
+});
+history.replaceState({page:'home'},'','#home');
 
 // ── ANALYTICS ──
 const A={
