@@ -1,4 +1,4 @@
-import { readData, writeData } from './_store.js';
+import { appendRow, readRows } from './_sheets.js';
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
@@ -6,8 +6,12 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    const data = await readData('preorders');
-    return res.status(200).json({ preorders: data });
+    const rows = await readRows('Preorders');
+    const preorders = rows.map(r => ({
+      id: r[0], name: r[1], email: r[2], product: r[3],
+      quantity: r[4], source: r[5], createdAt: r[6],
+    }));
+    return res.status(200).json({ preorders });
   }
 
   if (req.method !== 'POST') {
@@ -25,19 +29,17 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid email address' });
   }
 
-  const entry = {
-    id: `po_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-    name: String(name).slice(0, 200),
-    email: String(email).slice(0, 200),
-    product: String(product).slice(0, 100),
-    quantity: String(quantity || '1').slice(0, 10),
-    source: String(source || '').slice(0, 100),
-    createdAt: new Date().toISOString(),
-  };
+  const id = `po_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-  const data = await readData('preorders');
-  data.push(entry);
-  await writeData('preorders', data);
+  await appendRow('Preorders', [
+    id,
+    String(name).slice(0, 200),
+    String(email).slice(0, 200),
+    String(product).slice(0, 100),
+    String(quantity || '1').slice(0, 10),
+    String(source || '').slice(0, 100),
+    new Date().toISOString(),
+  ]);
 
-  return res.status(201).json({ success: true, id: entry.id });
+  return res.status(201).json({ success: true, id });
 }

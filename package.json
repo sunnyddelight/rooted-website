@@ -6,5 +6,7 @@
     "dev": "vercel dev",
     "build": "echo 'Static site — no build step required'"
   },
-  "dependencies": {}
+  "dependencies": {
+    "googleapis": "^171.4.0"
+  }
 }

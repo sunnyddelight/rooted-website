@@ -1,13 +1,8 @@
-import { readData, writeData } from './_store.js';
+import { appendRow, findInColumn } from './_sheets.js';
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
-  }
-
-  if (req.method === 'GET') {
-    const data = await readData('newsletter');
-    return res.status(200).json({ subscribers: data });
   }
 
   if (req.method !== 'POST') {
@@ -25,21 +20,19 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid email address' });
   }
 
-  const data = await readData('newsletter');
-
-  const already = data.find(d => d.email === email);
-  if (already) {
+  // Check for duplicate — email is column index 1 in Newsletter sheet
+  const existing = await findInColumn('Newsletter', 1, email);
+  if (existing) {
     return res.status(200).json({ success: true, message: 'Already subscribed' });
   }
 
-  const entry = {
-    id: `nl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-    email: String(email).slice(0, 200),
-    createdAt: new Date().toISOString(),
-  };
+  const id = `nl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-  data.push(entry);
-  await writeData('newsletter', data);
+  await appendRow('Newsletter', [
+    id,
+    String(email).slice(0, 200),
+    new Date().toISOString(),
+  ]);
 
-  return res.status(201).json({ success: true, id: entry.id });
+  return res.status(201).json({ success: true, id });
 }
