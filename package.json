@@ -1,0 +1,12 @@
+{
+  "name": "rooted-website",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static site — no build step required'"
+  },
+  "dependencies": {
+    "googleapis": "^171.4.0"
+  }
+}
